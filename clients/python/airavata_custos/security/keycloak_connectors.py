@@ -69,7 +69,7 @@ class KeycloakBackend(object):
             token, user_info = self._get_token_and_user_info_redirect_flow(idp_credentials)
             return token, user_info
         except Exception as e:
-            return None
+            return None, None
 
     def prepare_idp_credentials(self, client_id, client_secret, redirect_uri, idp_alias):
         """
@@ -82,7 +82,7 @@ class KeycloakBackend(object):
         """
 
         base_authorize_url = self.keycloak_settings.KEYCLOAK_AUTHORIZE_URL
-        oauth2_session = OAuth2Session(client_id, scope='openid', redirect_uri=redirect_uri)
+        oauth2_session = OAuth2Session(client_id, scope=('openid', 'email', 'profile'), redirect_uri=redirect_uri)
         authorization_url, state = oauth2_session.authorization_url(base_authorize_url)
         authorization_url += '&kc_idp_hint=' + quote(idp_alias)
         return IdpCredentials(client_id, client_secret, authorization_url, state,
@@ -138,7 +138,7 @@ class KeycloakBackend(object):
 
     def _get_token_and_user_info_redirect_flow(self, client_credentials):
         oauth2_session = OAuth2Session(client_credentials.client_id,
-                                       scope='openid',
+                                       scope=('openid', 'email', 'profile'),
                                        redirect_uri=client_credentials.redirect_uri,
                                        state=client_credentials.state)
         token = oauth2_session.fetch_token(self.keycloak_settings.KEYCLOAK_TOKEN_URL,
@@ -150,7 +150,7 @@ class KeycloakBackend(object):
 
     def _get_token_from_refresh_token(self, client_credentials, refresh_token):
 
-        oauth2_session = OAuth2Session(client_credentials.client_id, scope='openid')
+        oauth2_session = OAuth2Session(client_credentials.client_id, scope=('openid', 'email', 'profile'))
         auth = requests.auth.HTTPBasicAuth(client_credentials.client_id, client_credentials.client_secret)
         token = oauth2_session.refresh_token(token_url=self.keycloak_settings.KEYCLOAK_TOKEN_URL,
                                              refresh_token=refresh_token,

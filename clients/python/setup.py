@@ -11,7 +11,7 @@ setup(
     description='Apache Airavata Custos Python API',
     author='Airavata Custos Developers',
     author_email='custos@airavata.apache.org',
-    packages=find_packages(include=['airavata_custos']),
+    packages=find_packages(),
     license='Apache License 2.0',
     setup_requires=setup_requirements,
     test_suite='tests',
